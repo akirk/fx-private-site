@@ -56,7 +56,7 @@ add_filter( 'comment_text_rss', 'fx_private_site_feed_content', 95 );
 
 add_filter( 'rest_endpoints', 'fx_rest_endpoints', 95 );
 function fx_rest_endpoints( $endpoints ) {
-	if ( is_user_logged_in() ) {
+	if ( ! fx_private_site_get_option( 'enable', false ) || is_user_logged_in() ) {
 		return $endpoints;
 	}
 
@@ -71,7 +71,7 @@ function fx_rest_endpoints( $endpoints ) {
 
 add_filter( 'rest_index', 'fx_rest_index', 95 );
 function fx_rest_index( $response ) {
-	if ( is_user_logged_in() ) {
+	if ( ! fx_private_site_get_option( 'enable', false ) || is_user_logged_in() ) {
 		return $response;
 	}
 
