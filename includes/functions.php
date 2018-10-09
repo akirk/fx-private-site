@@ -54,6 +54,32 @@ add_filter( 'the_content_feed', 'fx_private_site_feed_content', 95 );
 add_filter( 'the_excerpt_rss',  'fx_private_site_feed_content', 95 );
 add_filter( 'comment_text_rss', 'fx_private_site_feed_content', 95 );
 
+add_filter( 'rest_endpoints', 'fx_rest_endpoints', 95 );
+function fx_rest_endpoints( $endpoints ) {
+	if ( is_user_logged_in() ) {
+		return $endpoints;
+	}
+
+	foreach ( $endpoints as $route => $endpoint ){
+		if ( 0 === stripos( $route, '/wp/v2' ) ){
+			unset( $endpoints[ $route ] );
+		}
+	}
+
+	return $endpoints;
+}
+
+add_filter( 'rest_index', 'fx_rest_index', 95 );
+function fx_rest_index( $response ) {
+	if ( is_user_logged_in() ) {
+		return $response;
+	}
+
+	unset( $response->data['name'] );
+	unset( $response->data['description'] );
+
+	return $response;
+}
 
 /**
  * Redirects users that are not logged in to the 'wp-login.php' page.
