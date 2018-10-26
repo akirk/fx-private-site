@@ -54,19 +54,36 @@ add_filter( 'the_content_feed', 'fx_private_site_feed_content', 95 );
 add_filter( 'the_excerpt_rss',  'fx_private_site_feed_content', 95 );
 add_filter( 'comment_text_rss', 'fx_private_site_feed_content', 95 );
 
-add_filter( 'rest_endpoints', 'fx_rest_endpoints', 95 );
-function fx_rest_endpoints( $endpoints ) {
-	if ( ! fx_private_site_get_option( 'enable', false ) || is_user_logged_in() ) {
-		return $endpoints;
-	}
-
-	foreach ( $endpoints as $route => $endpoint ){
-		if ( 0 === stripos( $route, '/wp/v2' ) ){
-			unset( $endpoints[ $route ] );
+add_filter( 'posts_results', 'fx_private_site_post_status', 95 );
+function fx_private_site_post_status( $posts ) {
+	if ( fx_private_site_get_option( 'enable', false ) ) {
+		// Treat all posts as private, thus also hiding them from unauthenticated REST endpoints.
+		foreach ( $posts as $post ) {
+			$post->post_status = 'private';
 		}
 	}
+	return $posts;
+}
+add_filter( 'rest_request_before_callbacks', 'fx_private_site_rest_request_before_callbacks', 95, 3 );
+function fx_private_site_rest_request_before_callbacks(	$response, $handler, $request ) {
+	// When directly accessing an endpoint in a browser, a user will be
+	// appear authenticated if a nonce is present, see rest_cookie_check_errors().
+	if ( is_wp_error( $response ) || ! fx_private_site_get_option( 'enable', false ) || is_user_logged_in() ) {
+		return $response;
+	}
 
-	return $endpoints;
+	$route = $request->get_route();
+	// Don't allow spying on the users list.
+	if ( 0 === stripos( $route, '/wp/v2/users' ) ) {
+		return new WP_Error(
+			'rest_forbidden',
+			'Sorry, you are not allowed to do that.',
+			array( 'status' => 401 )
+		);
+	}
+
+	// The wp/v2/posts and wp/v2/pages endpoints are safe since they respect the post status.
+	return $response;
 }
 
 add_filter( 'rest_index', 'fx_rest_index', 95 );
