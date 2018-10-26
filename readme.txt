@@ -46,10 +46,10 @@ The settings is in the bottom of "Settings > Reading" in your admin panel. You w
 
 == Changelog ==
 
-= 1.2.2 - 31 July 2017 =
-Disable REST API for logged-out users to prevent snooping.
+= 1.2.2 - October 26, 2018 =
+Remove name and description from the REST response, ensure posts have a post_status private so that they don't appear in unauthenticated REST responses.
 
-= 1.2.1 - 31 July 2017 =
+= 1.2.1 - 31 July 2018 =
 * Whitelist WordPress robots.txt credit to [Alex Kirk](https://alexander.kirk.at/)
 
 = 1.2.0 - 09 September 2016 =
